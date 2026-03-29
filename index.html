@@ -372,6 +372,55 @@ textarea{resize:vertical}
 
       <!-- ACTIVE PHASE: ATTENDANCE -->
       <div id="activeSection" class="hidden">
+
+        <!-- MANAGE STUDENTS PANEL -->
+        <div class="card">
+          <div class="card-hdr" style="cursor:pointer;margin-bottom:0;padding-bottom:0;border-bottom:none" onclick="toggleManageStudents()">
+            <div style="flex:1">
+              <div class="card-title">📋 Class Register <span id="activeStCount" style="font-size:.8rem;color:var(--text2);font-weight:400;font-family:'Source Sans 3',sans-serif"></span></div>
+              <div class="card-sub">Click to add or remove students</div>
+            </div>
+            <span id="manageToggleIcon" style="font-size:1.1rem;color:var(--text2)">▾</span>
+          </div>
+          <div id="manageStudentsBody" style="display:none;margin-top:18px;padding-top:16px;border-top:var(--rule)">
+            <div style="background:var(--parchment);border:var(--rule);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px">
+              <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:12px">Enrol New Student</div>
+              <label class="flabel" style="margin-top:0">Full Name</label>
+              <input type="text" id="stNameActive" placeholder="Student full name">
+              <div class="row2">
+                <div>
+                  <label class="flabel">Age</label>
+                  <input type="number" id="stAgeActive" placeholder="e.g. 8" min="3" max="20">
+                </div>
+                <div>
+                  <label class="flabel">Level</label>
+                  <select id="stLevelActive">
+                    <option value="">Select…</option>
+                    <optgroup label="Pre-Primary">
+                      <option value="PP1">PP1 (age 4–5)</option>
+                      <option value="PP2">PP2 (age 5–6)</option>
+                    </optgroup>
+                    <optgroup label="Primary">
+                      <option value="Grade 1">Grade 1</option>
+                      <option value="Grade 2">Grade 2</option>
+                      <option value="Grade 3">Grade 3</option>
+                      <option value="Grade 4">Grade 4</option>
+                      <option value="Grade 5">Grade 5</option>
+                      <option value="Grade 6">Grade 6</option>
+                    </optgroup>
+                    <optgroup label="Junior Secondary">
+                      <option value="Grade 7">Grade 7</option>
+                      <option value="Grade 8">Grade 8</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+              <button class="btn-primary" onclick="addStudentActive()">+ Enrol Student</button>
+            </div>
+            <div id="activeStudentTableWrap"></div>
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-hdr">
             <div>
@@ -685,9 +734,10 @@ function renderClassDetail() {
   const activeSec = document.getElementById('activeSection');
   if (locked) {
     banner.className='phase-banner active';
-    banner.textContent='✓ Active — register locked. Recording attendance.';
+    banner.textContent='✓ Active — students can be added or removed at any time.';
     setupSec.classList.add('hidden');
     activeSec.classList.remove('hidden');
+    renderActiveStudentTable();
     loadAttendanceDay();
     renderAttHistory();
   } else {
@@ -751,7 +801,7 @@ function levelClass(l) {
 async function lockClass() {
   const d = db.classes[currentClassId];
   if (!d.students.length) { showAlert('Enrol at least one student before locking.','err'); return; }
-  if (!confirm('Lock the register? You will no longer be able to add or remove students.')) return;
+  if (!confirm('Lock the register and start recording attendance?')) return;
   showLoading('Locking register…');
   try {
     d.locked = true;
@@ -761,6 +811,84 @@ async function lockClass() {
     showAlert('Register locked. You can now record daily attendance.','ok');
   } catch(e) { showAlert('Error: '+e.message,'err'); d.locked=false; }
   finally { hideLoading(); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  MANAGE STUDENTS — ACTIVE PHASE
+// ══════════════════════════════════════════════════════════
+function toggleManageStudents() {
+  const body = document.getElementById('manageStudentsBody');
+  const icon = document.getElementById('manageToggleIcon');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  icon.textContent = open ? '▴' : '▾';
+  if (open) renderActiveStudentTable();
+}
+
+function renderActiveStudentTable() {
+  const d = db.classes[currentClassId];
+  const count = document.getElementById('activeStCount');
+  if (count) count.textContent = '(' + d.students.length + ' enrolled)';
+  const wrap = document.getElementById('activeStudentTableWrap');
+  if (!wrap) return;
+  if (!d.students.length) {
+    wrap.innerHTML = '<div class="empty-state" style="padding:20px 0"><div class="ei">📋</div>No students enrolled yet.</div>';
+    return;
+  }
+  wrap.innerHTML = `<div style="overflow-x:auto"><table class="student-table">
+    <thead><tr><th>#</th><th>Name</th><th>Age</th><th>Level</th><th></th></tr></thead>
+    <tbody>${d.students.map((s,i) => `<tr>
+      <td class="student-num">${i+1}</td>
+      <td style="font-weight:600">${s.name}</td>
+      <td>${s.age}</td>
+      <td><span class="level-badge ${levelClass(s.level)}">${s.level}</span></td>
+      <td><button class="btn-sm btn-red" onclick="removeStudentActive(${s.id})">Remove</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+async function addStudentActive() {
+  const name  = document.getElementById('stNameActive').value.trim();
+  const age   = parseInt(document.getElementById('stAgeActive').value);
+  const level = document.getElementById('stLevelActive').value;
+  if (!name || !age || !level) { showAlert('Fill in name, age and level.', 'err'); return; }
+  const d = db.classes[currentClassId];
+  if (d.students.find(s => s.name.toLowerCase() === name.toLowerCase())) {
+    showAlert('This student is already enrolled.', 'err'); return;
+  }
+  d.students.push({ id: Date.now(), name, age, level });
+  showLoading('Saving…');
+  try {
+    await saveDB();
+    document.getElementById('stNameActive').value = '';
+    document.getElementById('stAgeActive').value = '';
+    document.getElementById('stLevelActive').value = '';
+    renderActiveStudentTable();
+    loadAttendanceDay(); // refresh attendance table with new student
+    renderClassList();
+    showAlert('Student enrolled and saved.', 'ok');
+  } catch(e) {
+    d.students.pop();
+    showAlert('Error: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+
+async function removeStudentActive(sid) {
+  if (!confirm('Remove this student from the register? Their attendance data will be kept.')) return;
+  const d = db.classes[currentClassId];
+  const removed = d.students.find(s => s.id === sid);
+  d.students = d.students.filter(s => s.id !== sid);
+  showLoading('Saving…');
+  try {
+    await saveDB();
+    renderActiveStudentTable();
+    loadAttendanceDay();
+    renderClassList();
+    showAlert('Student removed.', 'ok');
+  } catch(e) {
+    d.students.push(removed);
+    showAlert('Error: ' + e.message, 'err');
+  } finally { hideLoading(); }
 }
 
 // ══════════════════════════════════════════════════════════
