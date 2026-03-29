@@ -512,9 +512,9 @@ const CLASSES = [
 
 const ADMIN = { email:'amicipadrealdoodv@gmail.com', password:'aldovettori2026', nome:'Admin' };
 
-const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/69c988dd36566621a85cc224';
+const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/69c98efcaaba882197a54c49';
 const JSONBIN_KEY = '$2a$10$mZ.qMlZMju3bJxDm7vY69u31zv0HwAPxAqBfdfa.Wn25oUJQ76coa';
-const JSONBIN_ACCESS_KEY = '$2a$10$5oSWq5Sk/kqlJADg.bRFFe6CNxrSOpxiJN00PmUWDnB1bouxHJswa';
+
 const DATA_KEY = 'school';
 
 let currentUser = null;
@@ -570,7 +570,7 @@ async function loadDB() {
   showLoading('Loading register…');
   try {
     const res = await fetch(JSONBIN_URL + '/latest', {
-      headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY }
+      headers: { 'X-Master-Key': JSONBIN_KEY }
     });
     if (!res.ok) {
       const err = await res.json().catch(()=>({}));
@@ -594,7 +594,7 @@ async function loadDB() {
 async function saveDB() {
   // Read current full record first to preserve other keys
   const readRes = await fetch(JSONBIN_URL + '/latest', {
-    headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY }
+    headers: { 'X-Master-Key': JSONBIN_KEY }
   });
   if (!readRes.ok) {
     const err = await readRes.json().catch(()=>({}));
