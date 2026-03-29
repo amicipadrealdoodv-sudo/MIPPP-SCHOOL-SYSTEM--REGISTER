@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIPPP Educational School Program</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,500;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --g900:#0a2e1a; --g800:#0f3d22; --g700:#155c30; --g600:#1a7a3f;
+  --g500:#219150; --g400:#2ebd6a; --g300:#5dd68e; --g200:#a8edca;
+  --g100:#e6f9ef; --g50:#f2fdf6;
+  --amber:#b45309; --amber-bg:#fffbeb; --amber-border:#fcd34d;
+  --blue:#1d4ed8; --blue-bg:#eff6ff; --blue-border:#93c5fd;
+  --red:#e05252; --red-bg:#fff0f0;
+  --text:#0d1f13; --text2:#4a6356;
+  --border:#d1ead9; --card:#fff; --bg:#f0f8f3;
+  --shadow:0 2px 16px rgba(21,92,48,.08);
+  --radius:16px; --radius-sm:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;padding-bottom:80px;color:var(--text)}
+::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:var(--g200);border-radius:99px}
+.hidden{display:none!important}
+input,select,textarea,button{font-family:'DM Sans',sans-serif}
+
+/* ── LOGIN ── */
+#loginScreen{position:fixed;inset:0;z-index:1000;background:linear-gradient(150deg,var(--g900) 0%,var(--g700) 60%,var(--g500) 100%);display:flex;justify-content:center;align-items:center}
+#loginScreen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,rgba(46,189,106,.18),transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(46,189,106,.12),transparent 50%)}
+.lc{position:relative;background:rgba(255,255,255,.07);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.15);padding:44px 36px;border-radius:24px;width:90%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.4);text-align:center}
+.lc-logo{width:64px;height:64px;background:var(--g400);border-radius:18px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:1.8rem}
+.lc h2{color:#fff;font-size:1.4rem;font-weight:700;margin-bottom:2px}
+.lc p{color:rgba(255,255,255,.55);font-size:.82rem;margin-bottom:24px}
+.lc .field{position:relative;margin-bottom:12px}
+.lc .field input{width:100%;padding:13px 14px 13px 42px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--radius-sm);color:#fff;font-size:.93rem;outline:none;transition:.2s}
+.lc .field input::placeholder{color:rgba(255,255,255,.4)}
+.lc .field input:focus{border-color:var(--g400);background:rgba(255,255,255,.15)}
+.lc .fi{position:absolute;left:13px;top:50%;transform:translateY(-50%);pointer-events:none}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--g400),var(--g500));color:#fff;border:none;border-radius:var(--radius-sm);font-size:1rem;font-weight:700;cursor:pointer;margin-top:6px;box-shadow:0 4px 20px rgba(46,189,106,.4);transition:.15s}
+.btn-login:hover{transform:translateY(-1px)}
+.login-err{color:#ff8a8a;font-size:.83rem;margin-top:10px;display:none}
+.login-err.show{display:block}
+
+/* ── HEADER ── */
+header{background:linear-gradient(90deg,var(--g900),var(--g800));color:#fff;padding:0 18px;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.2)}
+.hc{max-width:900px;margin:0 auto;height:58px;display:flex;align-items:center;gap:10px}
+.hlogo{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.hlogo-badge{background:var(--g400);color:var(--g900);padding:2px 8px;border-radius:6px;font-size:.75rem;font-weight:700;white-space:nowrap}
+.huser{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 10px;border-radius:99px;font-size:.78rem;color:rgba(255,255,255,.85);white-space:nowrap}
+.btn-hdr{padding:6px 12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:500;transition:.2s;white-space:nowrap}
+.btn-hdr:hover{background:rgba(255,255,255,.2)}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;padding:5px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:18px}
+.tab{flex:1;padding:10px 6px;border:none;background:transparent;border-radius:12px;cursor:pointer;font-weight:600;color:var(--text2);font-size:.84rem;transition:.2s}
+.tab:hover{background:var(--g100)}
+.tab.active{background:linear-gradient(135deg,var(--g600),var(--g500));color:#fff;box-shadow:0 4px 12px rgba(33,145,80,.3)}
+
+/* ── MAIN WRAP ── */
+.main{max-width:900px;margin:20px auto;padding:0 14px;display:none}
+.main.active{display:block;animation:fadeUp .35s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.content{display:none}
+.content.active{display:block;animation:fadeUp .25s ease}
+
+/* ── CARD ── */
+.card{background:var(--card);padding:20px;border-radius:var(--radius);margin-bottom:14px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.card-hdr{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.card-icon{width:34px;height:34px;background:var(--g100);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.card-title{font-size:.95rem;font-weight:700;color:var(--g800)}
+.card-sub{font-size:.76rem;color:var(--text2);margin-top:1px}
+
+/* ── FORM ELEMENTS ── */
+.flabel{display:block;font-size:.74rem;font-weight:700;color:var(--text2);margin:13px 0 5px;text-transform:uppercase;letter-spacing:.5px}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.92rem;color:var(--text);background:var(--g50);outline:none;transition:.2s}
+input:focus,select:focus,textarea:focus{border-color:var(--g400);box-shadow:0 0 0 3px rgba(46,189,106,.12)}
+textarea{resize:vertical}
+.btn-primary{padding:13px 20px;background:linear-gradient(135deg,var(--g600),var(--g500));color:#fff;border:none;border-radius:var(--radius-sm);font-size:.92rem;font-weight:700;cursor:pointer;box-shadow:0 3px 14px rgba(33,145,80,.3);transition:.15s;width:100%;margin-top:14px}
+.btn-primary:hover{transform:translateY(-1px)}
+.btn-sm{padding:6px 13px;border-radius:8px;font-size:.79rem;font-weight:600;cursor:pointer;border:1.5px solid;transition:.2s;white-space:nowrap}
+.btn-green{background:var(--g100);color:var(--g700);border-color:var(--g200)}
+.btn-green:hover{background:var(--g500);color:#fff;border-color:var(--g500)}
+.btn-red{background:var(--red-bg);color:var(--red);border-color:#fccaca}
+.btn-red:hover{background:var(--red);color:#fff}
+.btn-blue{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+.btn-blue:hover{background:var(--blue);color:#fff}
+.btn-amber{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+.btn-amber:hover{background:var(--amber);color:#fff}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* ── ALERT ── */
+.alert{padding:11px 14px;border-radius:var(--radius-sm);margin-bottom:12px;font-weight:500;font-size:.88rem;display:none}
+.alert.ok{background:var(--g100);color:var(--g700);border:1px solid var(--g200);display:block}
+.alert.err{background:var(--red-bg);color:var(--red);border:1px solid #fccaca;display:block}
+.alert.info{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);display:block}
+
+/* ── LOADING ── */
+.loading{display:none;position:fixed;inset:0;background:rgba(10,46,26,.82);backdrop-filter:blur(4px);z-index:2000;justify-content:center;align-items:center;flex-direction:column;color:#fff}
+.loading.active{display:flex}
+.spinner{width:42px;height:42px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--g400);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{font-size:.88rem;color:rgba(255,255,255,.7)}
+
+/* ── SCHOOL GRID ── */
+.school-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.school-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:18px;cursor:pointer;transition:.2s;position:relative}
+.school-card:hover{border-color:var(--g400);box-shadow:var(--shadow);transform:translateY(-2px)}
+.school-card.lchekuti{border-top:4px solid var(--g500)}
+.school-card.nursery{border-top:4px solid var(--amber)}
+.sc-type{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.sc-type.lchekuti{color:var(--g600)}
+.sc-type.nursery{color:var(--amber)}
+.sc-name{font-size:.98rem;font-weight:700;color:var(--text);margin-bottom:3px}
+.sc-loc{font-size:.78rem;color:var(--text2)}
+.sc-stats{display:flex;gap:10px;margin-top:10px}
+.sc-stat{background:var(--g50);border:1px solid var(--border);border-radius:8px;padding:5px 10px;text-align:center}
+.sc-stat .v{font-size:.95rem;font-weight:700;font-family:'DM Mono',monospace}
+.sc-stat .l{font-size:.62rem;color:var(--text2);text-transform:uppercase;letter-spacing:.4px}
+.sc-locked{position:absolute;top:10px;right:10px;font-size:.7rem;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);padding:2px 7px;border-radius:99px;font-weight:700}
+.sc-open{position:absolute;top:10px;right:10px;font-size:.7rem;background:var(--g100);color:var(--g600);border:1px solid var(--g200);padding:2px 7px;border-radius:99px;font-weight:700}
+
+/* ── CLASS DETAIL HEADER ── */
+.back-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.btn-back{padding:7px 14px;background:var(--g50);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:.84rem;font-weight:600;color:var(--text2);transition:.2s}
+.btn-back:hover{background:var(--g100);border-color:var(--g300)}
+.class-title{font-size:1.1rem;font-weight:700;color:var(--g800)}
+.class-sub{font-size:.78rem;color:var(--text2);margin-top:1px}
+
+/* ── PHASE BANNER ── */
+.phase-banner{padding:12px 16px;border-radius:var(--radius-sm);margin-bottom:14px;font-size:.88rem;font-weight:600;display:flex;align-items:center;gap:8px}
+.phase-banner.setup{background:var(--amber-bg);color:var(--amber);border:1.5px solid var(--amber-border)}
+.phase-banner.active{background:var(--g100);color:var(--g700);border:1.5px solid var(--g200)}
+
+/* ── STUDENT TABLE ── */
+.student-table{width:100%;border-collapse:collapse;font-size:.83rem}
+.student-table th{background:var(--g800);color:#fff;padding:9px 10px;text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px}
+.student-table th:first-child{border-radius:8px 0 0 0}
+.student-table th:last-child{border-radius:0 8px 0 0}
+.student-table td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.student-table tr:last-child td{border-bottom:none}
+.student-table tr:hover td{background:var(--g50)}
+.student-num{font-family:'DM Mono',monospace;color:var(--text2);font-size:.75rem}
+.level-badge{padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:700}
+.level-pp1{background:#fef3c7;color:#92400e}
+.level-pp2{background:#fde68a;color:#78350f}
+.level-g1{background:#d1fae5;color:#065f46}
+.level-g2{background:#a7f3d0;color:#065f46}
+.level-g3{background:#6ee7b7;color:#064e3b}
+.level-g4{background:#bfdbfe;color:#1e3a8a}
+.level-g5{background:#93c5fd;color:#1e3a8a}
+.level-g6{background:#60a5fa;color:#1e40af}
+.level-g7{background:#c4b5fd;color:#3730a3}
+.level-g8{background:#a78bfa;color:#312e81}
+
+/* ── ATTENDANCE ── */
+.att-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.att-table th{background:var(--g800);color:#fff;padding:8px 6px;text-align:center;font-size:.68rem;text-transform:uppercase;letter-spacing:.4px;position:sticky;top:0}
+.att-table td{padding:7px 6px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}
+.att-table .name-col{text-align:left;font-weight:600;font-size:.8rem;min-width:130px}
+.att-table tr:hover td{background:var(--g50)}
+.att-check{width:22px;height:22px;cursor:pointer;accent-color:var(--g500)}
+.att-present{color:var(--g500);font-weight:700;font-size:.85rem}
+.att-absent{color:var(--red);font-weight:700;font-size:.85rem}
+.att-pct{font-family:'DM Mono',monospace;font-size:.78rem}
+
+/* ── ATTENDANCE DAY SELECTOR ── */
+.day-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.day-nav input[type=date]{width:auto;flex:1;min-width:140px}
+.att-summary{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.att-box{flex:1;min-width:90px;background:var(--g50);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;text-align:center}
+.att-box .v{font-size:1.3rem;font-weight:700;font-family:'DM Mono',monospace}
+.att-box .l{font-size:.65rem;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+.att-box.green .v{color:var(--g500)}
+.att-box.red .v{color:var(--red)}
+.att-box.blue .v{color:var(--blue)}
+
+/* ── NOTES ── */
+.note-entry{background:var(--g50);border-left:4px solid var(--g400);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:12px 14px;margin-bottom:8px}
+.note-date{font-size:.7rem;color:var(--text2);font-weight:700;margin-bottom:4px}
+.note-text{font-size:.86rem;color:var(--text)}
+.note-author{font-size:.68rem;color:var(--text2);margin-top:4px}
+.empty-state{text-align:center;padding:30px 14px;color:var(--text2);font-size:.88rem}
+.empty-state .ei{font-size:2.2rem;margin-bottom:8px}
+.divider{height:1px;background:var(--border);margin:12px 0}
+.tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.68rem;font-weight:700;margin-left:6px}
+.tag-lch{background:var(--g100);color:var(--g700)}
+.tag-nur{background:var(--amber-bg);color:var(--amber)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="lc">
+    <div class="lc-logo">📚</div>
+    <h2>MIPPP Educational</h2>
+    <p>School Program — Teacher Register</p>
+    <div class="field"><span class="fi">✉️</span><input type="email" id="lu" placeholder="Email" autocomplete="username"></div>
+    <div class="field"><span class="fi">🔑</span><input type="password" id="lp" placeholder="Password" autocomplete="current-password"></div>
+    <button class="btn-login" onclick="doLogin()">Sign In →</button>
+    <div class="login-err" id="loginErr">Invalid credentials. Please try again.</div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading" id="loading"><div class="spinner"></div><p id="loadingMsg">Loading…</p></div>
+
+<!-- HEADER -->
+<header id="hdr" class="hidden">
+  <div class="hc">
+    <div class="hlogo">📚 MIPPP <span class="hlogo-badge">SCHOOL</span></div>
+    <span class="huser" id="huser">—</span>
+    <button class="btn-hdr" onclick="doLogout()">Sign Out</button>
+  </div>
+</header>
+
+<!-- APP -->
+<div class="main" id="app">
+  <div id="alertGlobal" class="alert"></div>
+
+  <div class="tabs" id="mainTabs">
+    <button class="tab active" onclick="showTab('tabClasses',this)" id="tabBtnClasses">🏫 My Classes</button>
+    <button class="tab" onclick="showTab('tabAttendance',this)" id="tabBtnAtt">📅 Attendance</button>
+    <button class="tab" onclick="showTab('tabNotes',this)" id="tabBtnNotes">📝 Notes</button>
+    <button class="tab" onclick="showTab('tabAdmin',this)" id="tabBtnAdmin" style="display:none">👤 Admin</button>
+  </div>
+
+  <!-- ══ TAB: MY CLASSES ══ -->
+  <div id="tabClasses" class="content active">
+    <div id="classListView">
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-icon">🏫</div>
+          <div><div class="card-title" id="classListTitle">My Classes</div><div class="card-sub">Select a class to manage students or record attendance</div></div>
+        </div>
+        <div id="schoolGrid" class="school-grid"></div>
+      </div>
+    </div>
+
+    <!-- CLASS DETAIL -->
+    <div id="classDetailView" class="hidden">
+      <div class="back-bar">
+        <button class="btn-back" onclick="backToList()">← Back</button>
+        <div>
+          <div class="class-title" id="detailTitle">—</div>
+          <div class="class-sub" id="detailSub">—</div>
+        </div>
+      </div>
+
+      <!-- PHASE BANNER -->
+      <div class="phase-banner setup" id="phaseBanner">
+        ⚠️ Setup phase — add all students first, then lock the class to start recording attendance.
+      </div>
+
+      <!-- SETUP PHASE: ADD STUDENTS -->
+      <div id="setupSection">
+        <div class="card">
+          <div class="card-hdr"><div class="card-icon">➕</div><div class="card-title">Add Student</div></div>
+          <label class="flabel">Full Name</label>
+          <input type="text" id="stName" placeholder="Student full name">
+          <div class="row2">
+            <div>
+              <label class="flabel">Age</label>
+              <input type="number" id="stAge" placeholder="e.g. 8" min="3" max="20">
+            </div>
+            <div>
+              <label class="flabel">Kenya Public School Level</label>
+              <select id="stLevel">
+                <option value="">Select level…</option>
+                <optgroup label="Pre-Primary">
+                  <option value="PP1">PP1 (age 4–5)</option>
+                  <option value="PP2">PP2 (age 5–6)</option>
+                </optgroup>
+                <optgroup label="Primary">
+                  <option value="Grade 1">Grade 1 (age 6–7)</option>
+                  <option value="Grade 2">Grade 2 (age 7–8)</option>
+                  <option value="Grade 3">Grade 3 (age 8–9)</option>
+                  <option value="Grade 4">Grade 4 (age 9–10)</option>
+                  <option value="Grade 5">Grade 5 (age 10–11)</option>
+                  <option value="Grade 6">Grade 6 (age 11–12)</option>
+                </optgroup>
+                <optgroup label="Junior Secondary">
+                  <option value="Grade 7">Grade 7 (age 12–13)</option>
+                  <option value="Grade 8">Grade 8 (age 13–14)</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="addStudent()">➕ Add Student</button>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-icon">👥</div>
+            <div>
+              <div class="card-title">Student List <span id="stCount" style="font-size:.78rem;color:var(--text2);font-weight:500"></span></div>
+              <div class="card-sub">Add all students, then lock to start attendance</div>
+            </div>
+          </div>
+          <div id="studentTableWrap" class="empty-state"><div class="ei">👥</div>No students yet — add the first one above.</div>
+          <div style="margin-top:14px">
+            <button class="btn-sm btn-amber" id="lockBtn" onclick="lockClass()" style="width:100%;padding:11px;font-size:.88rem">🔒 Lock Class & Start Attendance</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVE PHASE: ATTENDANCE -->
+      <div id="activeSection" class="hidden">
+        <div class="card">
+          <div class="card-hdr"><div class="card-icon">📅</div><div class="card-title">Daily Attendance</div></div>
+          <div class="day-nav">
+            <input type="date" id="attDate" onchange="loadAttendanceDay()">
+            <button class="btn-sm btn-green" onclick="markAll(true)">✅ All Present</button>
+            <button class="btn-sm btn-red" onclick="markAll(false)">❌ All Absent</button>
+            <button class="btn-sm btn-blue" onclick="saveAttendance()">💾 Save</button>
+          </div>
+          <div class="att-summary" id="attSummary"></div>
+          <div style="overflow-x:auto">
+            <table class="att-table">
+              <thead><tr>
+                <th class="name-col">#  Name</th>
+                <th>Age</th>
+                <th>Level</th>
+                <th>Present</th>
+              </tr></thead>
+              <tbody id="attBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-icon">📊</div><div class="card-title">Attendance History</div></div>
+          <div id="attHistory"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: ATTENDANCE (quick cross-class) ══ -->
+  <div id="tabAttendance" class="content">
+    <div class="card">
+      <div class="card-hdr"><div class="card-icon">📅</div>
+        <div><div class="card-title">Attendance Overview</div><div class="card-sub">Summary across all your classes</div></div>
+      </div>
+      <div id="attOverview"><div class="empty-state"><div class="ei">📅</div>Select a class from My Classes to record attendance.</div></div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: NOTES ══ -->
+  <div id="tabNotes" class="content">
+    <div class="card">
+      <div class="card-hdr"><div class="card-icon">📝</div>
+        <div><div class="card-title">Daily Notes & Activities</div><div class="card-sub">Record notes for any of your classes</div></div>
+      </div>
+      <label class="flabel">Class</label>
+      <select id="noteClass"></select>
+      <label class="flabel">Date</label>
+      <input type="date" id="noteDate">
+      <label class="flabel">Activity / Notes</label>
+      <textarea id="noteText" rows="4" placeholder="Describe today's activity, lesson, observations…"></textarea>
+      <button class="btn-primary" onclick="saveNote()">💾 Save Note</button>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-icon">🗒️</div><div class="card-title">Note History</div></div>
+      <div id="noteHistory"><div class="empty-state"><div class="ei">🗒️</div>No notes yet.</div></div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: ADMIN ══ -->
+  <div id="tabAdmin" class="content">
+    <div class="card">
+      <div class="card-hdr"><div class="card-icon">👤</div>
+        <div><div class="card-title">Admin Overview</div><div class="card-sub">All classes, all teachers</div></div>
+      </div>
+      <div id="adminOverview"></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-icon">📊</div><div class="card-title">Full Attendance Report</div></div>
+      <div id="adminAttReport"><div class="empty-state"><div class="ei">📊</div>Select a class above to view its full report.</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  DATA — Teachers & Classes
+// ══════════════════════════════════════════════════════════
+const CLASSES = [
+  // ── LCHEKUTI ──
+  { id:'lch_nkorika_1', type:'Lchekuti', location:'Nkorika Village', teacher:'moses.lentiipo', teacherName:'Moses Lentiipo' },
+  { id:'lch_nkorika_2', type:'Lchekuti', location:'Nkorika Village', teacher:'simon.lewao', teacherName:'Simon Lewao' },
+  { id:'lch_nkorika_3', type:'Lchekuti', location:'Nkorika Village', teacher:'lemayian.lentumunai', teacherName:'Lemayian Lentumunai' },
+  { id:'lch_nkorika_4', type:'Lchekuti', location:'Nkorika Village', teacher:'james.leseewa', teacherName:'James Leseewa' },
+  { id:'lch_nkorika_5', type:'Lchekuti', location:'Nkorika Village', teacher:'matiba.letowon', teacherName:'Matiba Letowon' },
+  { id:'lch_soitpus_1', type:'Lchekuti', location:'Soit Pus Village', teacher:'paul.lentumunai', teacherName:'Paul Lentumunai' },
+  { id:'lch_soitpus_2', type:'Lchekuti', location:'Soit Pus Village', teacher:'moses.lesuyai', teacherName:'Moses Lesuyai' },
+  { id:'lch_soitpus_3', type:'Lchekuti', location:'Soit Pus Village', teacher:'julius.lemeteki', teacherName:'Julius Lemeteki' },
+  { id:'lch_soitpus_4', type:'Lchekuti', location:'Soit Pus Village', teacher:'selina.letoluai.sp', teacherName:'Selina Letoluai' },
+  { id:'lch_angata_1',  type:'Lchekuti', location:'Angata/Nkirenyi Village', teacher:'thomas.leleruk', teacherName:'Thomas Leleruk' },
+  { id:'lch_angata_2',  type:'Lchekuti', location:'Angata/Nkirenyi Village', teacher:'charles.lenaidamaa', teacherName:'Charles Lenaidamaa' },
+  { id:'lch_angata_3',  type:'Lchekuti', location:'Angata/Nkirenyi Village', teacher:'philip.lemunen', teacherName:'Philip Lemunen' },
+  { id:'lch_angata_4',  type:'Lchekuti', location:'Angata/Nkirenyi Village', teacher:'selina.letoluai.an', teacherName:'Selina Letoluai' },
+  { id:'lch_marti_1',   type:'Lchekuti', location:'Marti Village', teacher:'josephine.aleper', teacherName:'Josephine Aleper' },
+  { id:'lch_morijo_1',  type:'Lchekuti', location:'Morijo Village', teacher:'josephine.lekeriae', teacherName:'Josephine Lekeriae' },
+  { id:'lch_morijo_2',  type:'Lchekuti', location:'Morijo Village', teacher:'jullietta.lekumato', teacherName:'Jullietta Lekumato' },
+  // ── NURSERY ──
+  { id:'nur_nkorika_1', type:'Nursery', location:'Nkorika Village', teacher:'raphael.lepana', teacherName:'Raphael Lepana' },
+  { id:'nur_nkorika_2', type:'Nursery', location:'Nkorika Village', teacher:'dickson.lemante', teacherName:'Dickson Lemante' },
+  { id:'nur_nkorika_3', type:'Nursery', location:'Nkorika Village', teacher:'michael.letipila', teacherName:'Michael Letipila' },
+  { id:'nur_nkorika_4', type:'Nursery', location:'Nkorika Village', teacher:'daudi.lelesiit', teacherName:'Daudi Lelesiit' },
+  { id:'nur_soitpus_1', type:'Nursery', location:'Soit Pus Village', teacher:'isaac.lenkaak', teacherName:'Isaac Lenkaak' },
+  { id:'nur_soitpus_2', type:'Nursery', location:'Soit Pus Village', teacher:'james.lemeikari', teacherName:'James Lemeikari' },
+  { id:'nur_soitpus_3', type:'Nursery', location:'Soit Pus Village', teacher:'moses.lenolgisoi', teacherName:'Moses Lenolgisoi' },
+  { id:'nur_angata_1',  type:'Nursery', location:'Angata/Nkirenyi Village', teacher:'david.lenkidi', teacherName:'David Lenkidi' },
+  { id:'nur_angata_2',  type:'Nursery', location:'Angata/Nkirenyi Village', teacher:'thomas.lentiipo', teacherName:'Thomas Lentiipo' },
+  { id:'nur_angata_3',  type:'Nursery', location:'Angata/Nkirenyi Village', teacher:'jacob.leleejuk', teacherName:'Jacob Leleejuk' },
+  { id:'nur_angata_4',  type:'Nursery', location:'Angata/Nkirenyi Village', teacher:'john.lekasuyian', teacherName:'John Lekasuyian' },
+  { id:'nur_morijo_1',  type:'Nursery', location:'Morijo Village', teacher:'anyuni.lentumunai', teacherName:'Anyuni Lentumunai' },
+];
+
+// password = username + '2026'  (e.g. moses.lentiipo → moses.lentiipo2026)
+// Admin credentials
+const ADMIN = { email:'amicipadrealdoodv@gmail.com', password:'aldovettori2026', nome:'Admin' };
+
+// JSONBin — shares same bin, different key prefix
+const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/69c7fcb66860e0745bfc268f';
+const JSONBIN_KEY = '$2a$10$Z2lQjwDW.9ncUrm8gnE75uG9HdkCoNVsgmitFJCo2/3MAvSoMl8Pu';
+const DATA_KEY = 'school'; // record.school = { classes:{}, notes:{} }
+
+// ── State ──
+let currentUser = null; // { isAdmin, teacherId, teacherName, classIds[] }
+let db = { classes:{}, notes:{} }; // mirrored from JSONBin
+let currentClassId = null;
+
+// ══════════════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key==='Enter' && !document.getElementById('loginScreen').classList.contains('hidden')) doLogin();
+});
+
+// ══════════════════════════════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════════════════════════════
+function doLogin() {
+  const email = document.getElementById('lu').value.trim().toLowerCase();
+  const pass  = document.getElementById('lp').value;
+
+  // Admin check
+  if (email === ADMIN.email && pass === ADMIN.password) {
+    currentUser = { isAdmin:true, teacherId:'admin', teacherName:'Admin', classIds: CLASSES.map(c=>c.id) };
+    bootApp();
+    return;
+  }
+  // Teacher check: email = teacherId@mippp.org, password = teacherId2026
+  const teacherLogin = email.replace('@mippp.org','');
+  const cls = CLASSES.find(c => c.teacher === teacherLogin);
+  if (cls && pass === teacherLogin+'2026') {
+    // Find all classes for this teacher
+    const myClasses = CLASSES.filter(c => c.teacher === teacherLogin);
+    currentUser = { isAdmin:false, teacherId:teacherLogin, teacherName:cls.teacherName, classIds: myClasses.map(c=>c.id) };
+    bootApp();
+    return;
+  }
+  const err = document.getElementById('loginErr');
+  err.classList.add('show');
+  setTimeout(()=>err.classList.remove('show'),3000);
+}
+
+function bootApp() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('hdr').classList.remove('hidden');
+  document.getElementById('app').classList.add('active');
+  document.getElementById('huser').textContent = '👤 ' + currentUser.teacherName;
+  if (currentUser.isAdmin) document.getElementById('tabBtnAdmin').style.display='';
+  document.getElementById('attDate').valueAsDate = new Date();
+  document.getElementById('noteDate').valueAsDate = new Date();
+  loadDB();
+}
+
+function doLogout() { location.reload(); }
+
+// ══════════════════════════════════════════════════════════
+//  DB — JSONBin
+// ══════════════════════════════════════════════════════════
+async function loadDB() {
+  showLoading('Loading data…');
+  try {
+    const res = await fetch(JSONBIN_URL+'/latest', { headers:{'X-Master-Key':JSONBIN_KEY} });
+    const json = await res.json();
+    db = json.record?.school || { classes:{}, notes:{} };
+    // ensure structure
+    CLASSES.forEach(c => { if(!db.classes[c.id]) db.classes[c.id]={locked:false,students:[],attendance:{}}; });
+    if (!db.notes) db.notes={};
+    renderAll();
+  } catch(e) { showAlert('❌ Connection error: '+e.message,'err'); }
+  finally { hideLoading(); }
+}
+
+async function saveDB() {
+  const res = await fetch(JSONBIN_URL+'/latest', { headers:{'X-Master-Key':JSONBIN_KEY} });
+  const json = await res.json();
+  const record = json.record || {};
+  record.school = db;
+  await fetch(JSONBIN_URL, {
+    method:'PUT',
+    headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},
+    body:JSON.stringify(record)
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  RENDER ALL
+// ══════════════════════════════════════════════════════════
+function renderAll() {
+  renderClassList();
+  renderNoteSelect();
+  renderNoteHistory();
+  renderAttOverview();
+  if (currentUser.isAdmin) renderAdmin();
+}
+
+// ══════════════════════════════════════════════════════════
+//  CLASS LIST
+// ══════════════════════════════════════════════════════════
+function renderClassList() {
+  const grid = document.getElementById('schoolGrid');
+  const title = document.getElementById('classListTitle');
+  title.textContent = currentUser.isAdmin ? 'All Classes' : 'My Classes';
+  const myClasses = CLASSES.filter(c => currentUser.classIds.includes(c.id));
+  if (!myClasses.length) { grid.innerHTML='<div class="empty-state"><div class="ei">🏫</div>No classes assigned.</div>'; return; }
+  grid.innerHTML = myClasses.map(c => {
+    const d = db.classes[c.id] || {};
+    const stCount = (d.students||[]).length;
+    const locked = d.locked;
+    const attDays = Object.keys(d.attendance||{}).length;
+    const type = c.type.toLowerCase();
+    return `<div class="school-card ${type}" onclick="openClass('${c.id}')">
+      <div class="${locked?'sc-open':'sc-locked'}">${locked?'✅ Active':'⚠️ Setup'}</div>
+      <div class="sc-type ${type}">${c.type}</div>
+      <div class="sc-name">${c.teacherName}</div>
+      <div class="sc-loc">📍 ${c.location}</div>
+      <div class="sc-stats">
+        <div class="sc-stat"><div class="v">${stCount}</div><div class="l">Students</div></div>
+        <div class="sc-stat"><div class="v">${attDays}</div><div class="l">Days logged</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+//  CLASS DETAIL
+// ══════════════════════════════════════════════════════════
+function openClass(id) {
+  currentClassId = id;
+  const cls = CLASSES.find(c=>c.id===id);
+  const d = db.classes[id];
+  document.getElementById('detailTitle').textContent = cls.teacherName + ' — ' + cls.type;
+  document.getElementById('detailSub').textContent = '📍 ' + cls.location;
+  document.getElementById('classListView').classList.add('hidden');
+  document.getElementById('classDetailView').classList.remove('hidden');
+  renderClassDetail();
+}
+
+function backToList() {
+  currentClassId = null;
+  document.getElementById('classDetailView').classList.add('hidden');
+  document.getElementById('classListView').classList.remove('hidden');
+  renderClassList();
+}
+
+function renderClassDetail() {
+  const d = db.classes[currentClassId];
+  const locked = d.locked;
+  const banner = document.getElementById('phaseBanner');
+  const setupSec = document.getElementById('setupSection');
+  const activeSec = document.getElementById('activeSection');
+
+  if (locked) {
+    banner.className='phase-banner active';
+    banner.textContent='✅ Active — recording attendance. Students list is locked.';
+    setupSec.classList.add('hidden');
+    activeSec.classList.remove('hidden');
+    renderStudentTableReadonly();
+    loadAttendanceDay();
+    renderAttHistory();
+  } else {
+    banner.className='phase-banner setup';
+    banner.textContent='⚠️ Setup phase — add all students first, then lock the class to start recording attendance.';
+    setupSec.classList.remove('hidden');
+    activeSec.classList.add('hidden');
+    renderStudentTableEditable();
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  STUDENTS
+// ══════════════════════════════════════════════════════════
+function addStudent() {
+  const name  = document.getElementById('stName').value.trim();
+  const age   = parseInt(document.getElementById('stAge').value);
+  const level = document.getElementById('stLevel').value;
+  if (!name||!age||!level) { showAlert('⚠️ Fill in name, age and level.','err'); return; }
+  const d = db.classes[currentClassId];
+  if (d.students.find(s=>s.name.toLowerCase()===name.toLowerCase())) { showAlert('⚠️ Student already exists.','err'); return; }
+  d.students.push({ id: Date.now(), name, age, level });
+  document.getElementById('stName').value='';
+  document.getElementById('stAge').value='';
+  document.getElementById('stLevel').value='';
+  renderStudentTableEditable();
+  showAlert('✅ Student added.','ok');
+}
+
+function removeStudent(sid) {
+  if (!confirm('Remove this student?')) return;
+  const d = db.classes[currentClassId];
+  d.students = d.students.filter(s=>s.id!==sid);
+  renderStudentTableEditable();
+}
+
+function renderStudentTableEditable() {
+  const d = db.classes[currentClassId];
+  const wrap = document.getElementById('studentTableWrap');
+  document.getElementById('stCount').textContent = '('+d.students.length+')';
+  if (!d.students.length) { wrap.innerHTML='<div class="empty-state"><div class="ei">👥</div>No students yet — add the first one above.</div>'; return; }
+  wrap.innerHTML=`<div style="overflow-x:auto"><table class="student-table">
+    <thead><tr><th>#</th><th>Name</th><th>Age</th><th>Kenya Level</th><th></th></tr></thead>
+    <tbody>${d.students.map((s,i)=>`<tr>
+      <td class="student-num">${i+1}</td>
+      <td style="font-weight:600">${s.name}</td>
+      <td>${s.age}</td>
+      <td><span class="level-badge ${levelClass(s.level)}">${s.level}</span></td>
+      <td><button class="btn-sm btn-red" onclick="removeStudent(${s.id})">✕</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderStudentTableReadonly() {
+  // shown in activeSection — no remove button, but show full table
+  const d = db.classes[currentClassId];
+  // We render it inline in att body when rendering attendance
+}
+
+function levelClass(l) {
+  const m = {PP1:'level-pp1',PP2:'level-pp2','Grade 1':'level-g1','Grade 2':'level-g2',
+    'Grade 3':'level-g3','Grade 4':'level-g4','Grade 5':'level-g5','Grade 6':'level-g6',
+    'Grade 7':'level-g7','Grade 8':'level-g8'};
+  return m[l]||'';
+}
+
+async function lockClass() {
+  const d = db.classes[currentClassId];
+  if (!d.students.length) { showAlert('⚠️ Add at least one student before locking.','err'); return; }
+  if (!confirm('Lock the class? You will no longer be able to add or remove students.')) return;
+  showLoading('Locking class…');
+  try {
+    d.locked = true;
+    await saveDB();
+    renderClassDetail();
+    renderClassList();
+    showAlert('✅ Class locked. You can now record daily attendance.','ok');
+  } catch(e) { showAlert('❌ Error: '+e.message,'err'); d.locked=false; }
+  finally { hideLoading(); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  ATTENDANCE
+// ══════════════════════════════════════════════════════════
+function loadAttendanceDay() {
+  const date = document.getElementById('attDate').value;
+  const d = db.classes[currentClassId];
+  const dayRec = d.attendance[date] || {};
+  const body = document.getElementById('attBody');
+  body.innerHTML = d.students.map((s,i) => {
+    const present = dayRec[s.id] !== undefined ? dayRec[s.id] : true;
+    return `<tr>
+      <td class="name-col att-table"><span class="student-num">${i+1}</span> ${s.name}</td>
+      <td>${s.age}</td>
+      <td><span class="level-badge ${levelClass(s.level)}">${s.level}</span></td>
+      <td><input type="checkbox" class="att-check" id="att_${s.id}" ${present?'checked':''} onchange="updateAttSummary()"></td>
+    </tr>`;
+  }).join('');
+  updateAttSummary();
+}
+
+function updateAttSummary() {
+  const d = db.classes[currentClassId];
+  const total = d.students.length;
+  const present = d.students.filter(s => document.getElementById('att_'+s.id)?.checked).length;
+  const absent = total - present;
+  const pct = total ? Math.round(present/total*100) : 0;
+  document.getElementById('attSummary').innerHTML=`
+    <div class="att-box green"><div class="v">${present}</div><div class="l">Present</div></div>
+    <div class="att-box red"><div class="v">${absent}</div><div class="l">Absent</div></div>
+    <div class="att-box blue"><div class="v">${pct}%</div><div class="l">Rate</div></div>
+    <div class="att-box"><div class="v">${total}</div><div class="l">Total</div></div>`;
+}
+
+function markAll(val) {
+  const d = db.classes[currentClassId];
+  d.students.forEach(s => { const el=document.getElementById('att_'+s.id); if(el) el.checked=val; });
+  updateAttSummary();
+}
+
+async function saveAttendance() {
+  const date = document.getElementById('attDate').value;
+  if (!date) { showAlert('⚠️ Select a date.','err'); return; }
+  const d = db.classes[currentClassId];
+  const rec = {};
+  d.students.forEach(s => { rec[s.id] = !!document.getElementById('att_'+s.id)?.checked; });
+  d.attendance[date] = rec;
+  showLoading('Saving attendance…');
+  try {
+    await saveDB();
+    renderAttHistory();
+    showAlert('✅ Attendance saved for '+date,'ok');
+  } catch(e) { showAlert('❌ Error: '+e.message,'err'); }
+  finally { hideLoading(); }
+}
+
+function renderAttHistory() {
+  const d = db.classes[currentClassId];
+  const wrap = document.getElementById('attHistory');
+  const days = Object.keys(d.attendance).sort().reverse();
+  if (!days.length) { wrap.innerHTML='<div class="empty-state"><div class="ei">📅</div>No attendance recorded yet.</div>'; return; }
+  const total = d.students.length;
+  wrap.innerHTML=`<div style="overflow-x:auto"><table class="student-table">
+    <thead><tr><th>Date</th><th>Present</th><th>Absent</th><th>Rate</th></tr></thead>
+    <tbody>${days.map(dt => {
+      const rec = d.attendance[dt];
+      const p = Object.values(rec).filter(Boolean).length;
+      const a = total-p;
+      const pct = total?Math.round(p/total*100):0;
+      return `<tr>
+        <td style="font-weight:600;font-family:'DM Mono',monospace">${dt}</td>
+        <td style="color:var(--g500);font-weight:700">${p}</td>
+        <td style="color:var(--red);font-weight:700">${a}</td>
+        <td class="att-pct">${pct}%</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+//  NOTES
+// ══════════════════════════════════════════════════════════
+function renderNoteSelect() {
+  const sel = document.getElementById('noteClass');
+  const myClasses = CLASSES.filter(c=>currentUser.classIds.includes(c.id));
+  sel.innerHTML = '<option value="">Select class…</option>' +
+    myClasses.map(c=>`<option value="${c.id}">${c.teacherName} — ${c.type} (${c.location})</option>`).join('');
+}
+
+async function saveNote() {
+  const classId = document.getElementById('noteClass').value;
+  const date    = document.getElementById('noteDate').value;
+  const text    = document.getElementById('noteText').value.trim();
+  if (!classId||!date||!text) { showAlert('⚠️ Fill in all note fields.','err'); return; }
+  if (!db.notes[classId]) db.notes[classId]=[];
+  db.notes[classId].push({ id:Date.now(), date, text, author:currentUser.teacherName, ts:new Date().toISOString() });
+  showLoading('Saving note…');
+  try {
+    await saveDB();
+    document.getElementById('noteText').value='';
+    renderNoteHistory();
+    showAlert('✅ Note saved.','ok');
+  } catch(e) { showAlert('❌ Error: '+e.message,'err'); }
+  finally { hideLoading(); }
+}
+
+function renderNoteHistory() {
+  const wrap = document.getElementById('noteHistory');
+  const myClasses = CLASSES.filter(c=>currentUser.classIds.includes(c.id));
+  const notes = [];
+  myClasses.forEach(c => {
+    (db.notes[c.id]||[]).forEach(n => notes.push({...n, classObj:c}));
+  });
+  notes.sort((a,b)=>b.ts.localeCompare(a.ts));
+  if (!notes.length) { wrap.innerHTML='<div class="empty-state"><div class="ei">🗒️</div>No notes yet.</div>'; return; }
+  wrap.innerHTML = notes.map(n=>`
+    <div class="note-entry">
+      <div class="note-date">📅 ${n.date} · ${n.classObj.type} · ${n.classObj.location}</div>
+      <div class="note-text">${n.text}</div>
+      <div class="note-author">✍️ ${n.author}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+//  ATTENDANCE OVERVIEW TAB
+// ══════════════════════════════════════════════════════════
+function renderAttOverview() {
+  const wrap = document.getElementById('attOverview');
+  const myClasses = CLASSES.filter(c=>currentUser.classIds.includes(c.id));
+  if (!myClasses.length) { wrap.innerHTML='<div class="empty-state"><div class="ei">📅</div>No classes.</div>'; return; }
+  let html='';
+  myClasses.forEach(c=>{
+    const d=db.classes[c.id];
+    if(!d||!d.locked) return;
+    const total=d.students.length;
+    const days=Object.keys(d.attendance||{});
+    if(!days.length) return;
+    const avgPct=Math.round(days.reduce((sum,dt)=>{
+      const p=Object.values(d.attendance[dt]).filter(Boolean).length;
+      return sum+(total?p/total*100:0);
+    },0)/days.length);
+    html+=`<div class="prog-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-weight:700;font-size:.88rem">${c.teacherName} <span class="tag tag-${c.type==='Lchekuti'?'lch':'nur'}">${c.type}</span></div>
+        <div style="font-size:.76rem;color:var(--text2)">📍 ${c.location} · ${days.length} days · ${total} students</div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-weight:700;font-size:1.1rem;color:${avgPct>=75?'var(--g500)':avgPct>=50?'var(--amber)':'var(--red)'}">${avgPct}%</div>
+    </div>`;
+  });
+  wrap.innerHTML=html||'<div class="empty-state"><div class="ei">📅</div>No locked classes with attendance yet.</div>';
+}
+
+// ══════════════════════════════════════════════════════════
+//  ADMIN
+// ══════════════════════════════════════════════════════════
+function renderAdmin() {
+  const wrap = document.getElementById('adminOverview');
+  // Group by type then location
+  const groups = {};
+  CLASSES.forEach(c=>{
+    const k=c.type+' — '+c.location;
+    if(!groups[k]) groups[k]=[];
+    groups[k].push(c);
+  });
+  let html='';
+  Object.entries(groups).forEach(([grp,clsList])=>{
+    html+=`<div style="margin-bottom:18px">
+      <div style="font-size:.78rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)">${grp}</div>
+      ${clsList.map(c=>{
+        const d=db.classes[c.id]||{};
+        const locked=d.locked;
+        const stCount=(d.students||[]).length;
+        const days=Object.keys(d.attendance||{}).length;
+        const avgPct=()=>{
+          if(!days||!stCount) return '—';
+          const total=stCount;
+          const avg=Math.round(Object.keys(d.attendance).reduce((s,dt)=>{
+            const p=Object.values(d.attendance[dt]).filter(Boolean).length;
+            return s+(p/total*100);
+          },0)/days);
+          return avg+'%';
+        };
+        return `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--g50);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px">
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:.87rem">${c.teacherName}</div>
+            <div style="font-size:.72rem;color:var(--text2);margin-top:1px">Login: ${c.teacher}@mippp.org · pass: ${c.teacher}2026</div>
+          </div>
+          <div style="text-align:center;min-width:45px">
+            <div style="font-weight:700;font-family:'DM Mono',monospace">${stCount}</div>
+            <div style="font-size:.62rem;color:var(--text2)">Students</div>
+          </div>
+          <div style="text-align:center;min-width:45px">
+            <div style="font-weight:700;font-family:'DM Mono',monospace">${days}</div>
+            <div style="font-size:.62rem;color:var(--text2)">Days</div>
+          </div>
+          <div style="text-align:center;min-width:45px">
+            <div style="font-weight:700;font-family:'DM Mono',monospace">${avgPct()}</div>
+            <div style="font-size:.62rem;color:var(--text2)">Avg att.</div>
+          </div>
+          <span style="font-size:.68rem;background:${locked?'var(--g100)':'var(--amber-bg)'};color:${locked?'var(--g700)':'var(--amber)'};border:1px solid ${locked?'var(--g200)':'var(--amber-border)'};padding:2px 8px;border-radius:99px;font-weight:700">${locked?'Active':'Setup'}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+  wrap.innerHTML=html;
+}
+
+// ══════════════════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════════════════
+function showTab(id, btn) {
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if (id==='tabNotes') renderNoteHistory();
+  if (id==='tabAttendance') renderAttOverview();
+  if (id==='tabAdmin' && currentUser.isAdmin) renderAdmin();
+}
+
+// ══════════════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════════════
+function showAlert(txt, tipo) {
+  const el=document.getElementById('alertGlobal');
+  el.textContent=txt; el.className='alert '+tipo;
+  setTimeout(()=>el.className='alert',4000);
+}
+function showLoading(msg) { document.getElementById('loadingMsg').textContent=msg||'Loading…'; document.getElementById('loading').classList.add('active'); }
+function hideLoading() { document.getElementById('loading').classList.remove('active'); }
+</script>
+</body>
+</html>
