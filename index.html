@@ -513,8 +513,7 @@ const CLASSES = [
 const ADMIN = { email:'amicipadrealdoodv@gmail.com', password:'aldovettori2026', nome:'Admin' };
 
 const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/69c988dd36566621a85cc224';
-const JSONBIN_KEY = '$2a$10$Z2lQjwDW.9ncUrm8gnE75uG9HdkCoNVsgmitFJCo2/3MAvSoMl8Pu';
-const JSONBIN_ACCESS_KEY = '$2a$10$5oSWq5Sk/kqlJADg.bRFFe6CNxrSOpxiJN00PmUWDnB1bouxHJswa';
+const JSONBIN_KEY = '$2a$10$LazFhmtKjCx9Gr53K5P41OP0jrpz36E..IzqW2nbl9TsDCyV744mW';
 const DATA_KEY = 'school';
 
 let currentUser = null;
@@ -569,26 +568,53 @@ function doLogout() { location.reload(); }
 async function loadDB() {
   showLoading('Loading register…');
   try {
-    const res = await fetch(JSONBIN_URL+'/latest', { headers:{'X-Access-Key':JSONBIN_ACCESS_KEY} });
+    const res = await fetch(JSONBIN_URL + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      throw new Error('HTTP ' + res.status + ' — ' + (err.message || res.statusText));
+    }
     const json = await res.json();
+    // If bin is brand-new (no school key yet), start fresh
     db = json.record?.school || { classes:{}, notes:{} };
-    CLASSES.forEach(c => { if(!db.classes[c.id]) db.classes[c.id]={locked:false,students:[],attendance:{}}; });
-    if (!db.notes) db.notes={};
+    CLASSES.forEach(c => {
+      if (!db.classes[c.id]) db.classes[c.id] = { locked:false, students:[], attendance:{} };
+    });
+    if (!db.notes) db.notes = {};
     renderAll();
-  } catch(e) { showAlert('Connection error: '+e.message,'err'); }
-  finally { hideLoading(); }
+  } catch(e) {
+    showAlert('Errore connessione JSONBin: ' + e.message, 'err');
+  } finally {
+    hideLoading();
+  }
 }
 
 async function saveDB() {
-  const res = await fetch(JSONBIN_URL+'/latest', { headers:{'X-Access-Key':JSONBIN_ACCESS_KEY} });
-  const json = await res.json();
+  // Read current full record first to preserve other keys
+  const readRes = await fetch(JSONBIN_URL + '/latest', {
+    headers: { 'X-Master-Key': JSONBIN_KEY }
+  });
+  if (!readRes.ok) {
+    const err = await readRes.json().catch(()=>({}));
+    throw new Error('Read failed: HTTP ' + readRes.status + ' — ' + (err.message || readRes.statusText));
+  }
+  const json = await readRes.json();
   const record = json.record || {};
   record.school = db;
-  await fetch(JSONBIN_URL, {
-    method:'PUT',
-    headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},
-    body:JSON.stringify(record)
+
+  const writeRes = await fetch(JSONBIN_URL, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': JSONBIN_KEY
+    },
+    body: JSON.stringify(record)
   });
+  if (!writeRes.ok) {
+    const err = await writeRes.json().catch(()=>({}));
+    throw new Error('Write failed: HTTP ' + writeRes.status + ' — ' + (err.message || writeRes.statusText));
+  }
 }
 
 // ══════════════════════════════════════════════════════════
