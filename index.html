@@ -297,14 +297,24 @@ textarea{resize:vertical}
             <div class="card-sub">Enrolled students and daily attendance at a glance</div>
           </div>
         </div>
-        <div class="row2" style="gap:14px">
+        <div class="row2" style="gap:14px;margin-bottom:14px">
           <div class="att-box" style="background:var(--blue-bg);border-color:var(--blue-border);padding:18px">
-            <div class="v" id="dashTotalStudents" style="color:var(--blue);font-size:2rem">0</div>
-            <div class="l" style="font-size:.7rem">Total Students Enrolled</div>
+            <div class="v" id="dashTotalLchekuti" style="color:var(--blue);font-size:2rem">0</div>
+            <div class="l" style="font-size:.7rem">Lchekuti Students</div>
           </div>
+          <div class="att-box" style="background:var(--gold-bg);border-color:var(--gold-border);padding:18px">
+            <div class="v" id="dashTotalNursery" style="color:var(--gold);font-size:2rem">0</div>
+            <div class="l" style="font-size:.7rem">Nursery Students</div>
+          </div>
+        </div>
+        <div class="row2" style="gap:14px">
           <div class="att-box" style="background:var(--forest-bg);border-color:var(--forest-border);padding:18px">
-            <div class="v" id="dashPresentToday" style="color:var(--forest);font-size:2rem">0</div>
-            <div class="l" style="font-size:.7rem">Present Today</div>
+            <div class="v" id="dashPresentLchekuti" style="color:var(--forest);font-size:2rem">0</div>
+            <div class="l" style="font-size:.7rem">Lchekuti Present Today</div>
+          </div>
+          <div class="att-box" style="background:var(--forest2);border-color:var(--forest3);padding:18px">
+            <div class="v" id="dashPresentNursery" style="color:#fff;font-size:2rem">0</div>
+            <div class="l" style="font-size:.7rem;color:#fff">Nursery Present Today</div>
           </div>
         </div>
       </div>
@@ -704,21 +714,29 @@ function renderAll() {
 // ══════════════════════════════════════════════════════════
 function renderDashboardStats() {
   const myClasses = CLASSES.filter(c => currentUser.classIds.includes(c.id));
-  let totalStudents = 0;
-  let presentToday = 0;
+  let totalLch = 0, totalNur = 0;
+  let presentLch = 0, presentNur = 0;
   const today = new Date().toISOString().split('T')[0];
   myClasses.forEach(c => {
     const d = db.classes[c.id];
     if (!d) return;
-    totalStudents += (d.students || []).length;
+    const count = (d.students || []).length;
+    if (c.type === 'Lchekuti') totalLch += count;
+    else if (c.type === 'Nursery') totalNur += count;
     if (d.attendance && d.attendance[today]) {
-      presentToday += Object.values(d.attendance[today]).filter(Boolean).length;
+      const present = Object.values(d.attendance[today]).filter(Boolean).length;
+      if (c.type === 'Lchekuti') presentLch += present;
+      else if (c.type === 'Nursery') presentNur += present;
     }
   });
-  const elTotal = document.getElementById('dashTotalStudents');
-  const elPresent = document.getElementById('dashPresentToday');
-  if (elTotal) elTotal.textContent = totalStudents;
-  if (elPresent) elPresent.textContent = presentToday;
+  const elTL = document.getElementById('dashTotalLchekuti');
+  const elTN = document.getElementById('dashTotalNursery');
+  const elPL = document.getElementById('dashPresentLchekuti');
+  const elPN = document.getElementById('dashPresentNursery');
+  if (elTL) elTL.textContent = totalLch;
+  if (elTN) elTN.textContent = totalNur;
+  if (elPL) elPL.textContent = presentLch;
+  if (elPN) elPN.textContent = presentNur;
 }
 
 function renderClassList() {
