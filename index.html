@@ -289,6 +289,26 @@ textarea{resize:vertical}
   <!-- ══ TAB: MY CLASSES ══ -->
   <div id="tabClasses" class="content active">
     <div id="classListView">
+      <!-- DASHBOARD STATS -->
+      <div class="card" id="dashboardStatsCard">
+        <div class="card-hdr">
+          <div>
+            <div class="card-title">Programme Overview</div>
+            <div class="card-sub">Enrolled students and daily attendance at a glance</div>
+          </div>
+        </div>
+        <div class="row2" style="gap:14px">
+          <div class="att-box" style="background:var(--blue-bg);border-color:var(--blue-border);padding:18px">
+            <div class="v" id="dashTotalStudents" style="color:var(--blue);font-size:2rem">0</div>
+            <div class="l" style="font-size:.7rem">Total Students Enrolled</div>
+          </div>
+          <div class="att-box" style="background:var(--forest-bg);border-color:var(--forest-border);padding:18px">
+            <div class="v" id="dashPresentToday" style="color:var(--forest);font-size:2rem">0</div>
+            <div class="l" style="font-size:.7rem">Present Today</div>
+          </div>
+        </div>
+      </div>
+      <!-- /DASHBOARD STATS -->
       <div class="card">
         <div class="card-hdr">
           <div>
@@ -671,6 +691,7 @@ async function saveDB() {
 //  RENDER ALL
 // ══════════════════════════════════════════════════════════
 function renderAll() {
+  renderDashboardStats();
   renderClassList();
   renderNoteSelect();
   renderNoteHistory();
@@ -681,6 +702,25 @@ function renderAll() {
 // ══════════════════════════════════════════════════════════
 //  CLASS LIST
 // ══════════════════════════════════════════════════════════
+function renderDashboardStats() {
+  const myClasses = CLASSES.filter(c => currentUser.classIds.includes(c.id));
+  let totalStudents = 0;
+  let presentToday = 0;
+  const today = new Date().toISOString().split('T')[0];
+  myClasses.forEach(c => {
+    const d = db.classes[c.id];
+    if (!d) return;
+    totalStudents += (d.students || []).length;
+    if (d.attendance && d.attendance[today]) {
+      presentToday += Object.values(d.attendance[today]).filter(Boolean).length;
+    }
+  });
+  const elTotal = document.getElementById('dashTotalStudents');
+  const elPresent = document.getElementById('dashPresentToday');
+  if (elTotal) elTotal.textContent = totalStudents;
+  if (elPresent) elPresent.textContent = presentToday;
+}
+
 function renderClassList() {
   const grid = document.getElementById('schoolGrid');
   const title = document.getElementById('classListTitle');
@@ -704,6 +744,7 @@ function renderClassList() {
       </div>
     </div>`;
   }).join('');
+  renderDashboardStats();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -764,6 +805,7 @@ function addStudent() {
   document.getElementById('stAge').value='';
   document.getElementById('stLevel').value='';
   renderStudentTableEditable();
+  renderDashboardStats();
   showAlert('Student enrolled successfully.','ok');
 }
 
@@ -941,6 +983,7 @@ async function saveAttendance() {
   try {
     await saveDB();
     renderAttHistory();
+    renderDashboardStats();
     showAlert('Attendance saved for '+date+'.','ok');
   } catch(e) { showAlert('Error: '+e.message,'err'); }
   finally { hideLoading(); }
