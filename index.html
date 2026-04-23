@@ -297,6 +297,11 @@ textarea{resize:vertical}
             <div class="card-sub">Enrolled students and daily attendance at a glance</div>
           </div>
         </div>
+        <!-- BIG TOTAL -->
+        <div class="dash-total-big" style="text-align:center;padding:20px 0 24px;margin-bottom:16px;border-bottom:var(--rule)">
+          <div class="dash-total-num" id="dashTotalAll" style="font-family:'EB Garamond',serif;font-size:3.2rem;font-weight:600;color:var(--navy);line-height:1">0</div>
+          <div class="dash-total-label" style="font-size:.65rem;color:var(--text2);text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-top:6px">Total Students Enrolled</div>
+        </div>
         <div class="row2" style="gap:14px;margin-bottom:14px">
           <div class="att-box" style="background:var(--blue-bg);border-color:var(--blue-border);padding:18px">
             <div class="v" id="dashTotalLchekuti" style="color:var(--blue);font-size:2rem">0</div>
@@ -714,13 +719,14 @@ function renderAll() {
 // ══════════════════════════════════════════════════════════
 function renderDashboardStats() {
   const myClasses = CLASSES.filter(c => currentUser.classIds.includes(c.id));
-  let totalLch = 0, totalNur = 0;
+  let totalLch = 0, totalNur = 0, totalAll = 0;
   let presentLch = 0, presentNur = 0;
   const today = new Date().toISOString().split('T')[0];
   myClasses.forEach(c => {
     const d = db.classes[c.id];
     if (!d) return;
     const count = (d.students || []).length;
+    totalAll += count;
     if (c.type === 'Lchekuti') totalLch += count;
     else if (c.type === 'Nursery') totalNur += count;
     if (d.attendance && d.attendance[today]) {
@@ -733,10 +739,12 @@ function renderDashboardStats() {
   const elTN = document.getElementById('dashTotalNursery');
   const elPL = document.getElementById('dashPresentLchekuti');
   const elPN = document.getElementById('dashPresentNursery');
+  const elTA = document.getElementById('dashTotalAll');
   if (elTL) elTL.textContent = totalLch;
   if (elTN) elTN.textContent = totalNur;
   if (elPL) elPL.textContent = presentLch;
   if (elPN) elPN.textContent = presentNur;
+  if (elTA) elTA.textContent = totalAll;
 }
 
 function renderClassList() {
